@@ -10,4 +10,8 @@ class TestLstm:
         local = get_location(payload.address)
 
         df = collect(payload, local)
-        get_best_result(df)
+        result = get_best_result(df)
+
+        print(result.status)
+        
+        assert result

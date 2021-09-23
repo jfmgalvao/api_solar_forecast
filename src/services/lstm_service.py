@@ -1,4 +1,4 @@
-import math
+from math import sqrt
 
 import numpy as np
 import pandas as pd
@@ -9,18 +9,31 @@ from sklearn import preprocessing
 # convert an array of values into a dataset matrix
 from sklearn.metrics import mean_squared_error
 
+from src.models.response_model import Response
+
 
 def create_dataset(dataset, lb=30):
-    dataX, dataY = [], []
+    data_x, data_y = [], []
     for i in range(len(dataset) - lb - 1):
         a = dataset[i:(i + lb), 0]
-        dataX.append(a)
-        dataY.append(dataset[i + lb, 0])
-    return np.array(dataX), np.array(dataY)
+        data_x.append(a)
+        data_y.append(dataset[i + lb, 0])
+    return np.array(data_x), np.array(data_y)
 
 
 def MAPE(y_true, y_pred):
     return np.mean(abs((y_true - y_pred) / y_true)) * 100
+
+
+def build_model():
+    # create and fit the LSTM network
+    look_back = 30
+    model = Sequential()
+    model.add(LSTM(50, input_shape=(1, look_back)))
+    model.add(Dense(1))
+    model.compile(loss='mean_squared_error', optimizer='adam')
+
+    return model
 
 
 def get_best_result(df):
@@ -46,31 +59,26 @@ def get_best_result(df):
     x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
     x_val = np.reshape(x_val, (x_val.shape[0], 1, x_val.shape[1]))
 
-    # create and fit the LSTM network
-    look_back = 30
-    model = Sequential()
-    model.add(LSTM(50, input_shape=(1, look_back)))
-    model.add(Dense(1))
-    model.compile(loss='mean_squared_error', optimizer='adam')
+    model = build_model()
     model_fited = model.fit(x_train, y_train, epochs=200, batch_size=1, validation_data=(x_val, y_val), verbose=0)
 
-    trainPredict = model.predict(x_train)
-    testPredict = model.predict(x_test)
+    train_predict = model.predict(x_train)
+    test_predict = model.predict(x_test)
     # invert predictions
-    trainPredict = min_max_scaler.inverse_transform(trainPredict)
-    trainY = min_max_scaler.inverse_transform([y_train])
-    testPredict = min_max_scaler.inverse_transform(testPredict)
-    testY = min_max_scaler.inverse_transform([y_test])
+    train_predict = min_max_scaler.inverse_transform(train_predict)
+    train_y = min_max_scaler.inverse_transform([y_train])
+    test_predict = min_max_scaler.inverse_transform(test_predict)
+    test_y = min_max_scaler.inverse_transform([y_test])
     # calculate root mean squared error
-    trainScore = math.sqrt(mean_squared_error(trainY[0], trainPredict[:, 0]))
-    print('Train Score: %.2f RMSE' % (trainScore))
-    testScore = math.sqrt(mean_squared_error(testY[0], testPredict[:, 0]))
-    print('Test Score: %.2f RMSE' % (testScore))
+    train_score = sqrt(mean_squared_error(train_y[0], train_predict[:, 0]))
+    print(f'Train Score: {train_score:2f} RMSE')
 
-    predictRealInterval = min_max_scaler.inverse_transform(np.array(testPredict).reshape(1, -1))
-    targetRealInterval = min_max_scaler.inverse_transform(y_test.reshape(1, -1))
+    predict_real_interval = min_max_scaler.inverse_transform(np.array(test_predict).reshape(1, -1))
+    target_real_interval = min_max_scaler.inverse_transform(y_test.reshape(1, -1))
 
-    mape = MAPE(targetRealInterval, predictRealInterval)
-    rmse = math.sqrt(mean_squared_error(targetRealInterval, predictRealInterval))
-    print('MAPE: %.2f' % (mape))
-    print('RMSE: %.2f' % (rmse))
+    mape = MAPE(target_real_interval, predict_real_interval)
+    rmse = sqrt(mean_squared_error(target_real_interval, predict_real_interval))
+    print(f'MAPE: {mape:2f} %')
+    print(f'RMSE: {rmse:2f} %')
+
+    return Response('success', rmse, mape, list(test_predict.reshape(-1)), list(test_y.reshape(-1)))
