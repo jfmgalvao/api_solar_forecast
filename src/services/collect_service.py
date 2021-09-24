@@ -12,7 +12,7 @@ env = dotenv_values(join(PROJECT_ROOT[:-3], '.env'))
 def collect(payload, local):
     should_filter_day_period = get_config_key('should_filter_day_period')
     should_filter_zeroes = get_config_key('should_filter_zeroes')
-    years = range(payload.start_year, payload.end_year + 1)
+    years = range(payload.start_year, payload.end_year)
     leap_year = 'false'
     interval = '60'
     utc = 'false'

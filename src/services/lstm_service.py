@@ -71,13 +71,13 @@ def get_forecast(df):
     test_predict = min_max_scaler.inverse_transform(test_predict)
     test_y = min_max_scaler.inverse_transform([y_test])
     # calculate root mean squared error
-    train_score = sqrt(mean_squared_error(train_y[0], train_predict[:, 0]))
-    test_score = sqrt(mean_squared_error(test_y[0], test_predict[:, 0]))
-    print(f'Train Score: {train_score:.2f} RMSE')
-    print(f'Test Score: {test_score:.2f} RMSE')
+    train_rmse = sqrt(mean_squared_error(train_y[0], train_predict[:, 0]))
+    test_rmse = sqrt(mean_squared_error(test_y[0], test_predict[:, 0]))
+    print(f'Train Score: {train_rmse:.2f} RMSE')
+    print(f'Test Score: {test_rmse:.2f} RMSE')
 
     mape = MAPE(test_y, test_predict)
     print(f'MAPE: {mape:.2f} %')
 
-    return Response(STATUS_SUCCESS, f'{train_score:.2f} %', f'{test_score:.2f} %', f'{mape:.2f} %',
+    return Response(STATUS_SUCCESS, f'{train_rmse:.2f}', f'{test_rmse:.2f}', f'{mape:.2f}',
                     'list(test_predict.reshape(-1))', 'list(test_y.reshape(-1))')
