@@ -9,6 +9,7 @@ from sklearn import preprocessing
 # convert an array of values into a dataset matrix
 from sklearn.metrics import mean_squared_error
 
+from src.helpers import STATUS_SUCCESS
 from src.models.response_model import Response
 
 
@@ -36,7 +37,7 @@ def build_model():
     return model
 
 
-def get_best_result(df):
+def get_forecast(df):
     df['date'] = df.index
     df['date'] = pd.to_datetime(df['date'])
 
@@ -71,14 +72,12 @@ def get_best_result(df):
     test_y = min_max_scaler.inverse_transform([y_test])
     # calculate root mean squared error
     train_score = sqrt(mean_squared_error(train_y[0], train_predict[:, 0]))
-    print(f'Train Score: {train_score:2f} RMSE')
+    test_score = sqrt(mean_squared_error(test_y[0], test_predict[:, 0]))
+    print(f'Train Score: {train_score:.2f} RMSE')
+    print(f'Test Score: {test_score:.2f} RMSE')
 
-    predict_real_interval = min_max_scaler.inverse_transform(np.array(test_predict).reshape(1, -1))
-    target_real_interval = min_max_scaler.inverse_transform(y_test.reshape(1, -1))
+    mape = MAPE(test_y, test_predict)
+    print(f'MAPE: {mape:.2f} %')
 
-    mape = MAPE(target_real_interval, predict_real_interval)
-    rmse = sqrt(mean_squared_error(target_real_interval, predict_real_interval))
-    print(f'MAPE: {mape:2f} %')
-    print(f'RMSE: {rmse:2f} %')
-
-    return Response('success', rmse, mape, list(test_predict.reshape(-1)), list(test_y.reshape(-1)))
+    return Response(STATUS_SUCCESS, f'{train_score:.2f} %', f'{test_score:.2f} %', f'{mape:.2f} %',
+                    'list(test_predict.reshape(-1))', 'list(test_y.reshape(-1))')
