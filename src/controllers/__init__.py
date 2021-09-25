@@ -5,7 +5,7 @@ from flask import Blueprint
 routes = Blueprint('routes', __name__)
 
 from .api_status_controller import api_status
-from .forecast_controller import forecast
+from .forecast_controller import forecast_lstm
 
 
 @routes.errorhandler(Exception)

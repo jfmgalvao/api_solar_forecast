@@ -1,3 +1,4 @@
+from logging import getLogger
 from math import sqrt
 
 import numpy as np
@@ -6,11 +7,12 @@ from keras.layers.core import Dense
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential
 from sklearn import preprocessing
-# convert an array of values into a dataset matrix
 from sklearn.metrics import mean_squared_error
 
 from src.helpers import STATUS_SUCCESS
 from src.models.response_model import Response
+
+log = getLogger(__name__)
 
 
 def create_dataset(dataset, lb=30):
@@ -37,7 +39,9 @@ def build_model():
     return model
 
 
-def get_forecast(df):
+def get_forecast_lstm(df):
+    log.info('### start forcast lstm ###')
+
     df['date'] = df.index
     df['date'] = pd.to_datetime(df['date'])
 
@@ -73,11 +77,12 @@ def get_forecast(df):
     # calculate root mean squared error
     train_rmse = sqrt(mean_squared_error(train_y[0], train_predict[:, 0]))
     test_rmse = sqrt(mean_squared_error(test_y[0], test_predict[:, 0]))
-    print(f'Train Score: {train_rmse:.2f} RMSE')
-    print(f'Test Score: {test_rmse:.2f} RMSE')
+    log.debug(f'Train Score: {train_rmse:.2f} RMSE')
+    log.debug(f'Test Score: {test_rmse:.2f} RMSE')
 
     mape = MAPE(test_y, test_predict)
-    print(f'MAPE: {mape:.2f} %')
+    log.debug(f'MAPE: {mape:.2f}')
 
-    return Response(STATUS_SUCCESS, f'{train_rmse:.2f}', f'{test_rmse:.2f}', f'{mape:.2f}',
-                    'list(test_predict.reshape(-1))', 'list(test_y.reshape(-1))')
+    log.info('### end forcast lstm ###')
+    return Response(STATUS_SUCCESS, train_rmse, test_rmse, mape,
+                    test_predict.reshape(-1).tolist(), test_y.reshape(-1).tolist(), model.to_json())
