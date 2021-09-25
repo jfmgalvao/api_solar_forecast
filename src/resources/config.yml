@@ -1,0 +1,5 @@
+app_name: 'api_solar_forecast'
+version: '1.0.0'
+
+should_filter_day_period: False
+should_filter_zeroes: False

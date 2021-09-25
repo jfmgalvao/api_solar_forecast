@@ -1,0 +1,4 @@
+STATUS_SUCCESS = 'Success'
+STATUS_ERROR = 'Error'
+DATE_FORMAT_WITHOUT_TIME = '%Y-%m-%d'
+DATE_FORMAT_WITH_TIME = '%Y-%m-%d %H-%M'
