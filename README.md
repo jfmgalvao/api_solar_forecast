@@ -8,7 +8,7 @@ The following guides illustrate how to access the end points from REST communica
 
 * To do a POST requisition to:
 
-  > http://<URL_SERVICE>/<SERVICE_NAME> [api_status or forecast]/<CSV_NAME> [if the service is csv]
+  > http://<URL_SERVICE>/<SERVICE_NAME> [api_status or forecast_lstm]/<CSV_NAME> [if the service is csv]
 * The json object is:
 
 ```json
